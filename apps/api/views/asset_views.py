@@ -54,3 +54,12 @@ class BusinessUnitViewSet(viewsets.ModelViewSet):
     queryset = models.BusinessUnit.objects.all().order_by('id')
     serializer_class = BusinessUnitSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+
+class AppViewSet(viewsets.ModelViewSet):
+    """
+    应用管理
+    """
+    queryset = models.App.objects.all().order_by('id')
+    serializer_class = AppSerializer
+    permission_classes = (permissions.IsAuthenticated,)

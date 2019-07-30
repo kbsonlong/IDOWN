@@ -51,10 +51,10 @@ class BusinessUnitSerializer(serializers.ModelSerializer):
         model = models.BusinessUnit
         fields = '__all__'
 
-class IdcSerializer(serializers.ModelSerializer):
+class AppSerializer(serializers.ModelSerializer):
     """
-    IDC管理
+    I应用管理
     """
     class Meta:
-        model = models.IDC
+        model = models.App
         fields = '__all__'

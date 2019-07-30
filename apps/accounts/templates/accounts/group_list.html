@@ -328,7 +328,7 @@
         //获取权限列表
         $(document).ready(function(){
             $.ajax({
-                url: '/api/permission/',
+                url: '/api/account/permission/',
                 type: 'GET',
                 success: function (res) {
                     let cabinet_obj = $('#permissions');
@@ -346,7 +346,7 @@
          //获取用户列表
         $(document).ready(function(){
             $.ajax({
-                url: '/api/users/',
+                url: '/api/account/users/',
                 type: 'GET',
                 success: function (res) {
                     console.log(res);

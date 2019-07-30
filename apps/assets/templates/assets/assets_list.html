@@ -145,6 +145,15 @@
                                     </div>
 
                                 </fieldset>
+
+{#                                <fieldset id="server_items">#}
+{#                                    <div class="form-group" >#}
+{#                                        <label for="asset_memo" class="col-sm-2 control-label">服务器字段</label>#}
+{#                                        <div class="col-sm-6">#}
+{#                                            <textarea class="form-control" name="asset_memo" id="asset_memo"></textarea>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </fieldset>#}
                                 <!-- /.box-body -->
 
                                 <div class="box-footer">
@@ -483,7 +492,7 @@
         //获取列表
         function get_list (info){
             $.ajax({
-                url: '/api/' + info  + '/',
+                url: '/api/asset/' + info  + '/',
                 type: 'GET',
                 success: function (res) {
                     let cabinet_obj = $('#'+info);
@@ -507,7 +516,7 @@
 
         $(document).ready(function () {
             $.ajax({
-                url: '/api/users/',
+                url: '/api/account/users/',
                 type: 'GET',
                 success: function (res) {
                     let cabinet_obj = $('#users');
@@ -538,7 +547,7 @@
         myyear= mydate.getYear();
         year=(myyear > 200) ? myyear : 1900 + myyear;
         hh=mydate.getHours();
-        console.log(year,mymonth,myday)
+        console.log(year,mymonth,myday);
         document.write("<font color=#FFFFFF>"+year+"年"+mymonth+"月"+myday+"日 </font>");
     </script>
 

@@ -15,20 +15,19 @@ from api.views import asset_views
 app_name = 'api'
 
 router = routers.DefaultRouter()
-router.register(r'users', user_views.UsersViewSet)
-router.register(r'permission', user_views.PermissionViewSet)
-router.register(r'group', user_views.GroupViewSet)
-router.register(r'user_log', user_views.UserLogViewSet)
+##用户权限认证
+router.register(r'account/users', user_views.UsersViewSet)
+router.register(r'account/permission', user_views.PermissionViewSet)
+router.register(r'account/group', user_views.GroupViewSet)
+router.register(r'account/user_log', user_views.UserLogViewSet)
 
 ##资产管理
 router.register(r'assets',asset_views.AssetsViewSet)
-router.register(r'server',asset_views.ServerViewSet)
-router.register(r'idc',asset_views.IdcViewSet)
-router.register(r'businessunit',asset_views.BusinessUnitViewSet)
-router.register(r'env',asset_views.EnvsViewSet)
-
-
-
+router.register(r'asset/server',asset_views.ServerViewSet)
+router.register(r'asset/idc',asset_views.IdcViewSet)
+router.register(r'asset/businessunit',asset_views.BusinessUnitViewSet)
+router.register(r'asset/env',asset_views.EnvsViewSet)
+router.register(r'asset/apps',asset_views.AppViewSet)
 
 
 

@@ -60,11 +60,6 @@ def user_logout(request):
     return HttpResponseRedirect('/accounts/login/')
 
 
-@login_required
-def index(request):
-    return render(request,'base/editors.html')
-
-
 
 class UserListView(ListView):
     model = models.UserProfile
