@@ -1,0 +1,105 @@
+{% extends "base/base.html" %}
+{% block addcss %}
+    <link rel="stylesheet" href="/static/plugins/editor.md/css/editormd.min.css">
+{% endblock %}
+{% block content%}
+    <section class="content">
+        <div class="row">
+  <div class="col-md-12">
+
+      <form class="editormd-form col-md-12" action="." method="post" >
+          <div class="col-md-4">
+              <label>配置名称</label>
+              <input type="text" class="form-control" name="name" id="name" value="{{ conf.name }}"><small style="color: red">{{ error }}</small>
+          </div>
+          <div class="col-md-4">
+              <label>应用名称</label>
+              <select class="form-control select2" name="appname" id="apps"   data-live-search="true" >
+                  {% for app in apps %}
+                      {% if conf.app_id == app.id %}
+                          <option  value="{{ app.id }}"  selected = "selected">{{ app.name_cn }}</option>
+                      {% else %}
+                          <option  value="{{ app.id }}">{{ app.name_cn }}</option>
+                      {% endif %}
+                  {% endfor %}
+              </select>
+          </div>
+          <div class="col-md-4">
+              <div class="btn-group bootstrap-select">
+                  <label for="env" class="text-center">所属环境</label>
+                      <select class="form-control select2" name="env" id="env"   data-live-search="true" >
+                          {% for env in envs %}
+                              {% if conf.env_id == env.id %}
+                                  <option value="{{ conf.env_id }}" selected = "selected">{{ conf.env.name_cn }}</option>
+                              {% else %}
+                                  <option  value="{{ env.id }}">{{ env.name_cn }}</option>
+                              {% endif %}
+                          {% endfor %}
+                      </select>
+
+              </div>
+          </div>
+
+          <div id="editormd">
+              <textarea name="context">{{ conf.context }}</textarea>
+          </div>
+
+          <input type="submit" class="editormd-btn" value="提交">
+      </form>
+
+  </div>
+</div>
+        <!-- ./row -->
+    </section>
+{% endblock %}
+<!-- ./wrapper -->
+
+
+{% block addjs %}
+    <!-- Select2 -->
+    <script src="/static/AdminLTE/bower_components/select2/dist/js/select2.full.min.js"></script>
+
+    <script src="/static/plugins/editor.md/js/editormd.min.js"></script>
+    <script>
+        $('#page_header').text('新增配置');
+        $('#page_header_descript').text('New Config');
+
+        $(function () {
+            var testEditor = editormd("editormd", {
+                width: "100%",
+                height: 350,
+                syncScrolling: "single",
+                path: "/static/plugins/editor.md/lib/",
+                imageUpload: true,
+                imageFormats: ["jpg", "jpeg", "gif", "png", "bmp"],
+                imageUploadURL: "#"
+            });
+        });
+
+        //获取列表
+        function get_list (info){
+            $.ajax({
+                url: '/api/' + info  + '/',
+                type: 'GET',
+                success: function (res) {
+                    let cabinet_obj = $('#'+info);
+                    let cabinets = res;
+                    console.log(res);
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['name_cn'] + '</option>'
+                        )
+                    }
+                }
+            })
+        }
+
+        $(document).ready(function(){
+            get_list('apps');
+            get_list('env');
+        });
+
+    </script>
+
+{% endblock %}

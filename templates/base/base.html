@@ -54,16 +54,16 @@
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
           <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <h1>
-        Dashboard
-        <small>Control panel</small>
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active">Dashboard</li>
-      </ol>
-    </section>
+    {% if request.path != '/users/user_center/' and 'assets_search' not in request.path %}
+            <section class="content-header">
+                <h1></h1>
+                <ol class="breadcrumb">
+                    <li><a href="javascript:void(0);"><i class="fa fa-dashboard"></i> 仪表盘</a></li>
+                    <li><a href="javascript:void(0);"></a></li>
+                    <li class="active"></li>
+                </ol>
+            </section>
+        {% endif %}
 
     <!-- Main content -->
     {% block content %}
@@ -806,13 +806,77 @@
 <script src="/static/AdminLTE/bower_components/fastclick/lib/fastclick.js"></script>
 <!-- AdminLTE App -->
 <script src="/static/AdminLTE/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="/static/AdminLTE/dist/js/pages/dashboard.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="/static/AdminLTE/dist/js/demo.js"></script>
+
+
+    <script>
+
+    $(document).ajaxStart(function () {
+        let path = window.location.pathname;
+        if (path.indexOf('role_detail') === -1) {
+            $('#loading-image').show();
+        } else {
+            // pass
+        }
+    });
+
+    $(document).ajaxSend(function (event, request, url) {
+        if (!(url.type in ['GET', 'get'])) {
+            request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}')
+        }
+    });
+
+    $(document).ajaxComplete(function () {
+        $('#loading-image').hide();
+    });
+
+    <!-- 固定标签 -->
+    let pathname = window.location.pathname;
+
+    $("li a").each(function () {
+        let href = $(this).attr("href");
+        if (pathname === href) {
+            $(this).parents("ul").parent("li").addClass("active");
+            $(this).parent("li").addClass("active");
+        }
+    });
+
+
+    <!-- 生成面包屑和h1标题，并取消固定界面的面包屑 -->
+    $(".treeview-menu li a").each(function () {
+        if (pathname === '/') {
+            $('.content-header h1').text('仪表盘');
+            $('.content-header ol').remove();
+        } else if (hide_header()) {
+            $('.content-header ol').remove();
+        } else {
+            let href = $(this).attr("href");
+            if (pathname === href) {
+                let current_name = $(this).text();
+                let pre_name = $(this).parent('li').parent('ul').prev('a').text();
+                $('.content-header h1').text(current_name);
+                $('.content-header ol li:eq(1)').text(pre_name);
+                $('.content-header ol li:last').text(current_name);
+            }
+        }
+    });
+
+    function hide_header() {
+        let paths = ['wiki_view', 'wiki_edit', 'wiki_search', 'playbook_info', 'role_detail', 'role_add', '/deploy/', 'rollback'];
+
+        for (let item of paths) {
+            if (pathname.indexOf(item) !== -1) {
+                return true
+            }
+        }
+    }
+</script>
 {% endblock %}
 
 {% block addjs %}
+    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+<script src="/static/AdminLTE/dist/js/pages/dashboard.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/AdminLTE/dist/js/demo.js"></script>
 {% endblock %}
 </body>
 </html>

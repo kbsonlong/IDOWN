@@ -1,8 +1,10 @@
 from django.shortcuts import render,redirect
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.views.generic import ListView
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required,permission_required
+from django.contrib.auth.models import Group
 # Create your views here.
 
 from accounts import models
@@ -51,13 +53,16 @@ def user_login(request):
     return render(request, 'accounts/login1.html', context)
 
 def user_logout(request):
+    models.UserProfile.objects.filter(username=request.user).update(
+        login_status=1
+    )
     logout(request)
-    return redirect("accounts:login")
+    return HttpResponseRedirect('/accounts/login/')
 
 
 @login_required
 def index(request):
-    return render(request,'base/base.html')
+    return render(request,'base/editors.html')
 
 
 
@@ -65,3 +70,23 @@ class UserListView(ListView):
     model = models.UserProfile
     template_name = "accounts/user_list.html"
     context_object_name = "user_list"
+
+
+@permission_required('accounts.change_userprofile', raise_exception=True)
+def reset_password(request, pk):
+    if request.method == 'POST':
+        try:
+            models.UserProfile.objects.filter(id=pk).update(
+                password=make_password('123456')
+            )
+
+            return JsonResponse({"code": 200, "data": None, "msg": "密码重置成功！密码为123456"})
+        except Exception as e:
+            return JsonResponse({"code": 500, "data": None, "msg": "密码重置失败，原因：{}".format(e)})
+
+
+
+class GroupListView(ListView):
+    model = Group
+    template_name = "accounts/group_list.html"
+    context_object_name = "group_list"

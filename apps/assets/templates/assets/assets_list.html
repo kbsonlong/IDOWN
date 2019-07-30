@@ -1,0 +1,546 @@
+{% extends 'base/base.html' %}
+{% load staticfiles %}
+
+{% block addcss %}
+    <link rel="stylesheet"
+          href="{% static 'AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{% static 'AdminLTE/bower_components/select2/dist/css/select2.min.css' %}">
+
+    <style>
+        /* dataTables列内容居中 */
+        #Asset > tbody > tr > td {
+            text-align: center;
+        }
+
+        /* dataTables表头居中 */
+        #Asset > thead:first-child > tr:first-child > th {
+            text-align: center;
+        }
+
+        .form-horizontal .form-group {
+            margin-right: -200px;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.css' %}">
+{% endblock %}
+
+{% block content %}
+    <br>
+    <div class="row">
+        <div class="col-xs-12" style="margin-bottom: 3px">
+            <button class="btn btn-sm btn-success pull-left" data-toggle="modal" data-target="#AssetModal" id="add-Asset">
+                <i class="fa fa-Asset-plus"></i>
+                <span class="bigger-110">新增资产</span>
+            </button>
+        </div>
+
+        <!-- AssetModal  -->
+        <div class="modal fade" id="AssetModal" tabindex="-1" role="dialog" aria-labelledby="AssetModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="AssetModalLabel">
+
+                        </h4>
+                    </div>
+
+                    {% if perms.accounts.change_Assetprofile and perms.accounts.add_Assetprofile %}
+                        <div class="modal-body">
+                            <form class="main form-horizontal" id="asset_form">
+                                <fieldset>
+                                    <div class="form-group">
+                                        <label for="groups" class="col-sm-2 control-label">资产类型</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control select2"  name="asset_type"
+                                                    id="asset_type" style="width: 100%;" onchange="assetType()">
+                                                <option>请选择资产类型</option>
+                                                {% for asset_type in asset_types %}
+                                                    <option value="{{ asset_type.0 }}">{{ asset_type.1 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="name" class="col-sm-2 control-label">资产名称<span class="text-red">*</span></label>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control" name="name" id="name">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="sn" class="col-sm-2 control-label">资产编号<span class="text-red">*</span></label>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control" name="sn" id="sn">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="asset_status" class="col-sm-2 control-label">设备状态</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" name="status" id="status">
+                                                {% for asset_status in asset_status_ %}
+                                                    <option value="{{ asset_status.0 }}">{{ asset_status.1 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="price" class="col-sm-2 control-label">价格</label>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control" name="price" id="price">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="business_unit" class="col-sm-2 control-label">所属业务线</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" name="business_unit" id="business_unit">
+
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="asset_admin" class="col-sm-2 control-label">资产管理员</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" name="users" id="users">
+
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="asset_provider" class="col-sm-2 control-label">云服务商</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" name="provider" id="provider">
+                                                <option value="">请选择云服务商</option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="asset_idc" class="col-sm-2 control-label">所在机房</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" name="idc" id="idc">
+                                                <option value="">请选择机房</option>
+                                                {% for asset_idc in asset_idcs %}
+                                                    <option value="{{ asset_idc.id }}">{{ asset_idc.idc_name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="asset_memo" class="col-sm-2 control-label">备注</label>
+                                        <div class="col-sm-6">
+                                            <textarea class="form-control" name="asset_memo" id="asset_memo"></textarea>
+                                        </div>
+                                    </div>
+
+                                </fieldset>
+                                <!-- /.box-body -->
+
+                                <div class="box-footer">
+                                    <button type="button" class="btn btn-default pull-right" onclick="history.go(0)">返回</button>
+                                    <button type="button" class="btn btn-info pull-right" onclick="addAsset(another=false)">确认添加，并返回资产列表
+                                    </button>
+                                    <button type="button" class="btn btn-info pull-right" onclick="addAsset(another=true)">确认添加，继续添加另一个资产
+                                    </button>
+                                </div>
+                                <!-- /.box-footer -->
+                            </form>
+                        </div>
+
+                    {% else %}
+                        <div class="modal-body">
+                            抱歉！您没有修改用户的权限！如有疑问，请联系管理员！
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+
+        <!--dataTable-->
+        <div class="col-xs-12">
+            <!-- /.box -->
+            <div class="box">
+                <div class="box-body">
+                    <table id="Asset" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>资产类型</th>
+                            <th>子类型</th>
+                            <th>公网地址</th>
+                            <th>资产名称</th>
+                            <th>部署应用数</th>
+                            <th>业务线</th>
+                            <th>状态</th>
+                            <th>所属环境</th>
+                            <th>更新日期</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for Asset in assets_list %}
+                            <tr>
+                                <td>{{ Asset.id }}</td>
+
+                                {% if Asset.asset_type == 'server' %}
+                                  <td class="text-green text-bold">{{ Asset.get_asset_type_display }}</td>
+                                  <td>{{ Asset.server.get_sub_asset_type_display }}</td>
+                                {% elif Asset.asset_type == "networkdevice" %}
+                                  <td class="text-yellow text-bold">{{ Asset.get_asset_type_display }}</td>
+                                  <td>{{ Asset.networkdevice.get_sub_asset_type_display }}</td>
+                                {% elif Asset.asset_type == "storagedevice" %}
+                                  <td class="text-blue text-bold">{{ Asset.get_asset_type_display }}</td>
+                                  <td>{{ Asset.storagedevice.get_sub_asset_type_display }}</td>
+                                {% elif Asset.asset_type == "securitydevice" %}
+                                  <td class="text-red text-bold">{{ Asset.get_asset_type_display }}</td>
+                                  <td>{{ Asset.securitydevice.get_sub_asset_type_display }}</td>
+                                {% endif %}
+
+                                <td>{{ Asset.server.i_ip }}</td>
+                                <td>{{ Asset.name }}</td>
+                                <td>{{ Asset.server.app_set.count }}</td>
+                                <td>
+                                    {{ Asset.business_unit.name }}
+                                </td>
+                                <td>
+                                    {% if Asset.status == 0 %}
+                                        <span class="label label-success">{{ Asset.get_status_display }}</span>
+                                    {% elif Asset.status == 1 %}
+                                        <span class="label label-warning">{{ Asset.get_status_display }}</span>
+                                    {% elif Asset.status == 2 %}
+                                        <span class="label label-danger">{{ Asset.get_status_display }}</span>
+                                    {% elif Asset.status == 3 %}
+                                        <span class="label label-danger">{{ Asset.get_status_display }}</span>
+                                    {% elif Asset.status == 4 %}
+                                        <span class="label label-primary">{{ Asset.get_status_display }}</span>
+                                    {% elif Asset.status == 5 %}
+                                        <span class="label label-default">{{ Asset.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ Asset.server.env.name_cn }}
+                                </td>
+
+                                <td>{{ Asset.m_time }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-success btn-xs modify" data-toggle="modal"
+                                            data-id="{{ Asset.id }}" data-target="#AssetModal">详细/更新
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-xs delete" data-id="{{ Asset.id }}">
+                                        删除
+                                    </button>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <!-- /.row -->
+
+{% endblock %}
+
+
+{% block addjs %}
+    <!-- Select2 -->
+    <script src="{% static 'AdminLTE/bower_components/select2/dist/js/select2.full.min.js' %}"></script>
+    <!-- DataTables -->
+    <script src="{% static 'AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <!-- 输入验证 -->
+    <script src="{% static 'plugins/parsley/dist/parsley.min.js' %}"></script>
+    <script src="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.js' %}"></script>
+
+    <script>
+
+
+        $(function () {
+            Asset_table = $('#Asset').DataTable({
+                columnDefs: [{
+                    'targets': [-1],
+                    'orderable': false
+                }],
+                "order": [[0, "asc"]]
+            });
+        });
+
+
+        // Initialize Select2 Elements
+        $(function () {
+            $('.select2').select2({
+                allowClear: true
+            })
+        });
+
+
+        // 将数据JSON化
+        (function ($) {
+            $.fn.serializeJson = function () {
+                let serializeObj = {};
+                let array = this.serializeArray();
+                let names = ['Assetname', 'mobile', 'is_superAsset', 'is_active'];
+                $(array).each(function () {
+                    if (serializeObj[this.name]) {
+                        if ($.isArray(serializeObj[this.name])) {
+                            serializeObj[this.name].push(this.value);
+                        } else {
+                            serializeObj[this.name] = [serializeObj[this.name], this.value];
+                        }
+                    } else {
+                        if (names.indexOf(this.name) !== -1) {
+                            serializeObj[this.name] = this.value;
+                        } else {
+                            serializeObj[this.name] = [this.value];
+                        }
+                    }
+                });
+                return serializeObj;
+            };
+        })(jQuery);
+
+
+        function assetType() {
+            let asset_type = $('#asset_type').val();
+            let device_obj = $('#device_type');
+
+            if (asset_type === 'server') {
+                device_obj.html('<option>请选择设备类型</option>');
+                {% for server_type in server_types %}
+                    device_obj.append('<option value="' + {{ server_type.0 }} +'">' + '{{ server_type.1 }}' + '</option>');
+                {% endfor %}
+                $('#server_items').show();
+            } else if (asset_type === 'network') {
+                device_obj.html('<option>请选择设备类型</option>');
+                {% for network_type in network_types %}
+                    device_obj.append('<option value="' + {{ network_type.0 }} +'">' + '{{ network_type.1 }}' + '</option>');
+                {% endfor %}
+                $('#server_items').hide();
+            } else if (asset_type === 'office') {
+                device_obj.html('<option>请选择设备类型</option>');
+                {% for office_type in office_types %}
+                    device_obj.append('<option value="' + {{ office_type.0 }} +'">' + '{{ office_type.1 }}' + '</option>');
+                {% endfor %}
+                $('#server_items').hide();
+            } else if (asset_type === 'security') {
+                device_obj.html('<option>请选择设备类型</option>');
+                {% for security_type in security_types %}
+                    device_obj.append('<option value="' + {{ security_type.0 }} +'">' + '{{ security_type.1 }}' + '</option>');
+                {% endfor %}
+                $('#server_items').hide();
+            } else if (asset_type === 'storage') {
+                device_obj.html('<option>请选择设备类型</option>');
+                {% for storage_type in storage_types %}
+                    device_obj.append('<option value="' + {{ storage_type.0 }} +'">' + '{{ storage_type.1 }}' + '</option>');
+                {% endfor %}
+                $('#server_items').hide();
+            } else if (asset_type === 'software') {
+                device_obj.html('<option>请选择设备类型</option>');
+                {% for software_type in software_types %}
+                    device_obj.append('<option value="' + {{ software_type.0 }} +'">' + '{{ software_type.1 }}' + '</option>');
+                {% endfor %}
+                $('#server_items').hide();
+            }
+        }
+
+        function deviceType() {
+            let asset_type = $('#asset_type').val();
+            let device_type = $('#device_type').val();
+            let hosted_obj = $('.hosted_on');
+            console.log(device_type);
+            asset_type === 'server'  ? hosted_obj.show() : hosted_obj.hide()
+        }
+
+        // 添加资产
+        (function ($) {
+            $.fn.formatData = function (assetType) {
+                let formatObj = {};
+                let assetObj = {};
+                let array = this.serializeArray();
+                $(array).each(function () {
+                    //if (this.name.indexOf('asset_') !== -1) {
+                    //    assetObj[this.name] = this.value;
+                    //    formatObj['assets'] = assetObj;
+                    //} else if (this.name.indexOf('device_') !== -1) {
+                    //    formatObj[assetType + '_type'] = this.value;
+                    //} else {
+                        formatObj[this.name] = this.value;
+                    //}
+                });
+                return formatObj;
+            };
+        })(jQuery);
+
+        function addAsset(another) {
+            let assetType = $('#asset_type').val();
+            let data = $('.form-horizontal').formatData(assetType);
+            console.log(data);
+            $.ajax({
+                url: '/api/assets/',
+                type: 'POST',
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: "application/json",
+                success: function () {
+                    if (another) {
+                        $.confirm({
+                            title: 'Tips',
+                            content: '添加成功！',
+                            type: 'green',
+                            buttons: {
+                                Ok: function () {
+                                    document.getElementById("asset_form").reset();
+                                    $(".select2").val('').trigger('change');
+                                },
+                            }
+                        })
+                    } else {
+                        $.confirm({
+                            title: 'Tips',
+                            content: '添加成功！',
+                            type: 'green',
+                            buttons: {
+                                Ok: function () {
+                                    window.location.href = '{% url 'assets:assets_list' %}';
+                                },
+                            }
+                        })
+                    }
+                },
+                error: function (response) {
+                    $.alert({
+                        title: 'Tips',
+                        type: 'red',
+                        content: response.responseText,
+                    });
+                }
+            })
+        }
+        
+        let assets_tbody = $('#Asset tbody');
+        let assets_ops = $('#assets_ops');
+        // 删除资产
+        assets_tbody.on('click', '.delete', function () {
+            {% if perms.auth.delete_assets %}
+                let pk = $(this).attr('data-id');
+                let tr_obj = $(this).parents('tr');
+                $.confirm({
+                    title: 'Tips',
+                    content: '确定要删除这条记录么？',
+                    type: 'red',
+                    buttons: {
+                        Ok: function () {
+                            $.ajax({
+                                url: '/api/assets/' + pk + '/',
+                                method: 'DELETE',
+                                success: function () {
+                                    Asset_table.row(tr_obj).remove().draw();
+                                },
+                                error: function (data) {
+                                    $.alert({
+                                        title: 'Tips',
+                                        type: 'red',
+                                        content: '删除失败！' + data.responseText,
+                                    })
+                                }
+                            })
+                        },
+                        Cancel: function () {
+                            //
+                        }
+                    }
+                });
+            {% else %}
+                $.alert({
+                    title: 'Tips',
+                    type: 'red',
+                    content: '抱歉！您没有删除用户的权限！如有疑问，请联系管理员！',
+                });
+            {% endif %}
+        });
+
+        //获取列表
+        function get_list (info){
+            $.ajax({
+                url: '/api/' + info  + '/',
+                type: 'GET',
+                success: function (res) {
+                    let cabinet_obj = $('#'+info);
+                    let cabinets = res;
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['name'] + '</option>'
+                        )
+                    }
+                }
+            })
+        }
+
+        $(document).ready(function(){
+            {#get_list('cabinet');#}
+            get_list('idc');
+            {#get_list('provider');#}
+            get_list('businessunit');
+        });
+
+        $(document).ready(function () {
+            $.ajax({
+                url: '/api/users/',
+                type: 'GET',
+                success: function (res) {
+                    let cabinet_obj = $('#users');
+                    let cabinets = res;
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['username'] + '</option>'
+                        )
+                    }
+                }
+            })
+        })
+    </script>
+
+    <script>
+        var day="";
+        var month="";
+        var ampm="";
+        var ampmhour="";
+        var myweekday="";
+        var year="";
+        var hh;
+        mydate=new Date();
+        myweekday=mydate.getDay();
+        mymonth=mydate.getMonth()+1;
+        myday= mydate.getDate();
+        myyear= mydate.getYear();
+        year=(myyear > 200) ? myyear : 1900 + myyear;
+        hh=mydate.getHours();
+        console.log(year,mymonth,myday)
+        document.write("<font color=#FFFFFF>"+year+"年"+mymonth+"月"+myday+"日 </font>");
+    </script>
+
+{% endblock %}
+

@@ -1,0 +1,369 @@
+{% extends 'base/base.html' %}
+{% load staticfiles %}
+
+{% block addcss %}
+    <link rel="stylesheet"
+          href="{% static 'AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{% static 'AdminLTE/bower_components/select2/dist/css/select2.min.css' %}">
+
+    <style>
+        /* dataTables列内容居中 */
+        #group > tbody > tr > td {
+            text-align: center;
+        }
+
+        /* dataTables表头居中 */
+        #group > thead:first-child > tr:first-child > th {
+            text-align: center;
+        }
+
+        .form-horizontal .form-group {
+            margin-right: -200px;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-sm-7 pull-left" style="margin-bottom: 3px">
+            <button class="btn btn-sm btn-success pull-left" data-toggle="modal" data-target="#GroupModal"
+                    id="add-group">
+                <i class="fa fa-user-plus"></i>
+                <span class="bigger-110">新增用户组</span>
+            </button>
+        </div>
+
+        <!-- GroupModal  -->
+        <div class="modal fade" id="GroupModal" tabindex="-1" role="dialog" aria-labelledby="GroupModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="GroupModalLabel">
+
+                        </h4>
+                    </div>
+                    {% if perms.auth.add_group and perms.auth.change_group %}
+                        <div class="modal-body">
+                            <form class="main form-horizontal" id="group_detail" >
+                                <fieldset>
+                                    <div class="form-group" onchange="user_set()">
+                                        <label for="name" class="col-sm-2 control-label">用户组名称</label>
+                                        <div class="col-sm-6" onchange="permission()">
+                                            <input type="text" class="form-control" id="name" name="name" required/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" >
+                                        <label for="user_set" class="col-sm-2 control-label">组内用户</label>
+                                        <div class="col-sm-6">
+
+                                            <select class="form-control select2" multiple="multiple" id="user_set"
+                                                    name="user_set"
+                                                    style="width: 100%;">
+                                            </select>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="permissions" class="col-sm-2 control-label">用户组权限</label>
+                                        <div class="col-sm-6">
+
+                                            <select class="form-control select2" multiple="multiple"
+                                                    id="permissions" name="permissions"
+                                                    style="width: 100%;">
+
+                                            </select>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="space-24"></div>
+                                </fieldset>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                    id="group_ops"></button>
+                        </div>
+                    {% else %}
+                        <div class="modal-body">
+                            抱歉！您没有此操作的权限！如有疑问，请联系管理员！
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+                        </div>
+                    {% endif %}
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+
+        <!--dataTable-->
+        <div class="col-xs-12">
+            <!-- /.box -->
+            <div class="box">
+                <div class="box-body">
+                    <table id="group" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>用户组名称</th>
+                            <th>组内用户</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for group in group_list %}
+
+                            <tr>
+                                <td>{{ group.name }}</td>
+                                <td>
+                                    {% for user in group.user_set.all %}
+                                        {{ user }}&nbsp;
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-success btn-xs modify" data-toggle="modal"
+                                            data-target="#GroupModal" data-id="{{ group.id }}">详细/更新
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-xs delete" data-id="{{ group.id }}">
+                                        删除
+                                    </button>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <!-- /.row -->
+
+{% endblock %}
+
+
+{% block addjs %}
+    <!-- Select2 -->
+    <script src="{% static 'AdminLTE/bower_components/select2/dist/js/select2.full.min.js' %}"></script>
+    <!-- DataTables -->
+    <script src="{% static 'AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+
+    <script src="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.js' %}"></script>
+
+    <script>
+        $(function () {
+            group_table = $('#group').DataTable({
+                columnDefs: [{
+                    'targets': [-1],
+                    'orderable': false
+                }],
+                "order": [[0, "asc"]]
+            });
+        });
+
+        // Initialize Select2 Elements
+        $(function () {
+            $('.select2').select2({
+                allowClear: true
+            })
+        });
+
+        let group_tbody = $('#group tbody');
+        let group_ops = $('#group_ops');
+        // 新增用户组
+        $('#add-group').on('click', function () {
+            $(".select2").val('').trigger('change');
+            $('.modal-title').text('新增用户组');
+            group_ops.text('添加');
+
+            group_ops.unbind('click').on('click', function () {
+                let user_name = $('#user_set option:selected').text();
+                let data = $('#group_detail').serializeJson();
+                $.ajax({
+                    url: '/api/group/',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: "application/json",
+                    success: function (res) {
+                        group_table.row.add([
+                            res.name,
+                            user_name,
+                            `<button type="button" class="btn btn-success btn-xs modify" data-toggle="modal" data-target="#GroupModal" data-id="${res.id}">详细/更新</button> <button type="button" class="btn btn-danger btn-xs delete" data-id="${res.id}">删除</button>`
+                        ]).draw();
+                    },
+                    error: function (response) {
+                        $.alert({
+                            title: 'Tips',
+                            type: 'red',
+                            content: response.responseText,
+                        })
+                    }
+                })
+            })
+        });
+
+        // 更新组信息
+        group_tbody.on('click', '.modify', function () {
+            {% if perms.auth.delete_group %}
+                let group_id = $(this).attr('data-id');
+                $('.modal-title').text('修改用户组');
+                group_ops.text('确认修改');
+
+                $.get('/api/group/' + group_id + '/', function (data) {
+                    $('#name').val(data.name);
+                    $('#user_set').val(data.user_set).trigger('change');
+                    $('#permissions').val(data.permissions).trigger('change');
+                });
+
+                group_ops.unbind('click').on('click', function () {
+                    let data = $('#group_detail').serializeJson();
+                    $.ajax({
+                        url: '/api/group/' + group_id + '/',
+                        type: 'PUT',
+                        data: JSON.stringify(data),
+                        dataType: 'json',
+                        contentType: "application/json",
+                        success: function () {
+                            $.confirm({
+                                title: 'Tips!',
+                                content: '修改完成!',
+                                type: 'green',
+                                buttons: {
+                                    ok: function () {
+                                        window.location.reload()
+                                    }
+                                }
+                            });
+                        },
+                        error: function (response) {
+                            $.alert({
+                                title: 'Tips',
+                                type: 'red',
+                                content: response.responseText,
+                            })
+                        }
+                    })
+                });
+            {% endif %}
+        });
+
+        // 删除用户组
+        group_tbody.on('click', '.delete', function () {
+            {% if perms.auth.delete_group %}
+                let pk = $(this).attr('data-id');
+                let tr_obj = $(this).parents('tr');
+                $.confirm({
+                    title: 'Tips',
+                    content: '确定要删除这条记录么？',
+                    type: 'red',
+                    buttons: {
+                        Ok: function () {
+                            $.ajax({
+                                url: '/api/group/' + pk + '/',
+                                method: 'DELETE',
+                                success: function () {
+                                    group_table.row(tr_obj).remove().draw();
+                                },
+                                error: function (data) {
+                                    $.alert({
+                                        title: 'Tips',
+                                        type: 'red',
+                                        content: '删除失败！' + data.responseText,
+                                    })
+                                }
+                            })
+                        },
+                        Cancel: function () {
+                            //
+                        }
+                    }
+                });
+            {% else %}
+                $.alert({
+                    title: 'Tips',
+                    type: 'red',
+                    content: '抱歉！您没有删除用户组的权限！如有疑问，请联系管理员！',
+                });
+            {% endif %}
+        });
+
+        // 将数据JSON化
+        (function ($) {
+            $.fn.serializeJson = function () {
+                let serializeObj = {};
+                let array = this.serializeArray();
+                $(array).each(function () {
+                    if (serializeObj[this.name]) {
+                        if ($.isArray(serializeObj[this.name])) {
+                            serializeObj[this.name].push(this.value);
+                        } else {
+                            serializeObj[this.name] = [serializeObj[this.name], this.value];
+                        }
+                    } else {
+                        if (this.name === 'name') {
+                            serializeObj[this.name] = this.value;
+                        } else {
+                            serializeObj[this.name] = [this.value];
+                        }
+                    }
+                });
+                return serializeObj;
+            };
+        })(jQuery);
+
+        //获取权限列表
+        $(document).ready(function(){
+            $.ajax({
+                url: '/api/permission/',
+                type: 'GET',
+                success: function (res) {
+                    let cabinet_obj = $('#permissions');
+                    let cabinets = res;
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['name'] + '</option>'
+                        )
+                    }
+                }
+            })
+        });
+
+         //获取用户列表
+        $(document).ready(function(){
+            $.ajax({
+                url: '/api/users/',
+                type: 'GET',
+                success: function (res) {
+                    console.log(res);
+                    let cabinet_obj = $('#user_set');
+                    let cabinets = res;
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['username'] + '</option>'
+                        )
+                    }
+                }
+            })
+        })
+
+
+    </script>
+
+{% endblock %}
+

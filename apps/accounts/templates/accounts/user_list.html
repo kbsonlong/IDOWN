@@ -26,9 +26,9 @@
 {% endblock %}
 
 {% block content %}
-
+    <br>
     <div class="row">
-        <div class="col-sm-7 pull-left" style="margin-bottom: 3px">
+        <div class="col-xs-12" style="margin-bottom: 3px">
             <button class="btn btn-sm btn-success pull-left" data-toggle="modal" data-target="#UserModal" id="add-user">
                 <i class="fa fa-user-plus"></i>
                 <span class="bigger-110">新增用户</span>
@@ -72,7 +72,7 @@
                                         <label for="is_superuser" class="col-sm-2 control-label">超级管理员</label>
                                         <div class="col-sm-6">
                                             <select class="form-control select2" name="is_superuser" id="is_superuser"
-                                                    style="width: 100%;" required>
+                                                    style="width: 100%;" required onchange="group()">
                                                 <option value="1">是</option>
                                                 <option value="0" selected>否</option>
                                             </select>
@@ -83,7 +83,7 @@
                                         <label for="is_active" class="col-sm-2 control-label">是否激活</label>
                                         <div class="col-sm-6">
                                             <select class="form-control select2" name="is_active" id="is_active"
-                                                    style="width: 100%;" required>
+                                                    style="width: 100%;" required onchange="permission()">
                                                 <option value="1" selected>是</option>
                                                 <option value="0">否</option>
                                             </select>
@@ -95,7 +95,7 @@
                                         <div class="col-sm-6">
                                             <select class="form-control select2" multiple="multiple" name="groups"
                                                     id="groups"
-                                                    style="width: 100%;">
+                                                    style="width: 100%;" >
                                                 {% for group in groups %}
                                                     <option value="{{ group.id }}">{{ group.name }}</option>
                                                 {% endfor %}
@@ -115,14 +115,6 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="asset_cabinet" class="col-sm-2 control-label">所在机柜</label>
-                                        <div class="col-sm-10">
-                                            <select class="form-control" name="asset_cabinet" id="asset_cabinet">
-
-                                            </select>
-                                        </div>
-                                    </div>
 
                                     <div class="space-24"></div>
 
@@ -131,7 +123,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                            <button type="button" class="btn btn-primary" id="user_ops"></button>
+                            <button type="button" class="btn btn-primary" id="user_ops">提交</button>
                         </div>
                     {% else %}
                         <div class="modal-body">
@@ -227,43 +219,7 @@
     <script src="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.js' %}"></script>
 
     <script>
-        //ajax csrf_token
-        $(document).ajaxSend(function(event, xhr, settings) {
-            function getCookie(name) {
-                var cookieValue = null;
-                if (document.cookie && document.cookie != '') {
-                    var cookies = document.cookie.split(';');
-                    for (var i = 0; i < cookies.length; i++) {
-                        var cookie = jQuery.trim(cookies[i]);
-                        // Does this cookie string begin with the name we want?
-                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
-            function sameOrigin(url) {
-                // url could be relative or scheme relative or absolute
-                var host = document.location.host; // host + port
-                var protocol = document.location.protocol;
-                var sr_origin = '//' + host;
-                var origin = protocol + sr_origin;
-                // Allow absolute or scheme relative URLs to same origin
-                return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
-                    (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
-                    // or any other URL that isn't scheme relative or absolute i.e relative.
-                    !(/^(\/\/|http:|https:).*/.test(url));
-            }
-            function safeMethod(method) {
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-            }
 
-            if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
-                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-            }
-        });
 
         $(function () {
             user_table = $('#user').DataTable({
@@ -346,6 +302,7 @@
                 user_ops.text('确认修改');
 
                 $.get('/api/users/' + user_id + '/', function (data) {
+                    console.log(data);
                     let is_superuser = data.is_superuser ? "1" : "0";
                     let is_active = data.is_active ? "1" : "0";
                     $('#username').val(data.username);
@@ -439,7 +396,7 @@
                     buttons: {
                         Ok: function () {
                             $.ajax({
-                                url: '/users/reset_password/' + pk + '/',
+                                url: '/accounts/reset_password/' + pk + '/',
                                 method: 'POST',
                                 success: function (res) {
                                     $.alert({
@@ -498,23 +455,41 @@
 
 
         //获取权限列表
-        function idc() {
-            let idc_id = $('#asset_idc').val();
+        $(document).ready(function(){
             $.ajax({
                 url: '/api/permission/',
                 type: 'GET',
                 success: function (res) {
-                    let cabinet_obj = $('#asset_cabinet');
-                    let cabinets = res['cabinet'];
+                    let cabinet_obj = $('#user_permissions');
+                    let cabinets = res;
                     cabinet_obj.html('');
                     for (let i = 0; i < cabinets.length; i++) {
                         cabinet_obj.append(
-                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['cabinet_name'] + '</option>'
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['name'] + '</option>'
                         )
                     }
                 }
             })
-        }
+        });
+
+         //获取用户组列表
+        $(document).ready(function(){
+            $.ajax({
+                url: '/api/group/',
+                type: 'GET',
+                success: function (res) {
+                    console.log(res);
+                    let cabinet_obj = $('#groups');
+                    let cabinets = res;
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['name'] + '</option>'
+                        )
+                    }
+                }
+            })
+        })
 
     </script>
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
-from api.serializers import *
+from api.serializers.user_serializers import *
 # Create your views here.
 
 

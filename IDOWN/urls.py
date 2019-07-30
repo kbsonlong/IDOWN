@@ -22,5 +22,5 @@ urlpatterns = [
     path(r'api/', include('api.urls',namespace='api')),
     path('',views.index),
     path('accounts/',include('accounts.urls',namespace="accounts")),
-
+    path('assets/',include('assets.urls',namespace="assets")),
 ]
