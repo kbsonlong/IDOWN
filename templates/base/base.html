@@ -53,24 +53,24 @@
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-          <!-- Content Header (Page header) -->
-    {% if request.path != '/users/user_center/' and 'assets_search' not in request.path %}
-            <section class="content-header">
-                <h1></h1>
-                <ol class="breadcrumb">
-                    <li><a href="javascript:void(0);"><i class="fa fa-dashboard"></i> 仪表盘</a></li>
-                    <li><a href="javascript:void(0);"></a></li>
-                    <li class="active"></li>
-                </ol>
-            </section>
-        {% endif %}
+      <!-- Content Header (Page header) -->
+      {% if request.path != '/users/user_center/' and 'assets_search' not in request.path %}
+          <section class="content-header">
+              <h1></h1>
+              <ol class="breadcrumb">
+                  <li><a href="javascript:void(0);"><i class="fa fa-dashboard"></i> 仪表盘</a></li>
+                  <li><a href="javascript:void(0);"></a></li>
+                  <li class="active"></li>
+              </ol>
+          </section>
+      {% endif %}
 
     <!-- Main content -->
     {% block content %}
         <section class="content">
-      <!-- Small boxes (Stat box) -->
-      <div class="row">
-        <div class="col-lg-3 col-xs-6">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-aqua">
             <div class="inner">

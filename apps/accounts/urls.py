@@ -17,5 +17,7 @@ urlpatterns = [
     path('user_list/',views.UserListView.as_view(),name = 'user_list'),
     path('group_list/',views.GroupListView.as_view(),name = 'group_list'),
     path('create_user/',views.UserListView.as_view(),name = 'create_user'),
+    path('userprofile/<int:pk>/',views.UserDetailView.as_view(),name = 'userprofile'),
+    path('updateprofile/<int:pk>/',views.UserUpdateView.as_view(),name = 'updateprofile'),
     path('reset_password/<int:pk>/',views.reset_password,name = 'reset_password'),
 ]

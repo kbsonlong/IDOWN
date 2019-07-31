@@ -1,9 +1,11 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
-from django.views.generic import ListView
+from django.views.generic import ListView,DetailView
+from django.views.generic.edit import UpdateView
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required,permission_required
+from django.utils.decorators import method_decorator
 from django.contrib.auth.models import Group
 # Create your views here.
 
@@ -12,6 +14,11 @@ from accounts.forms import UserLoginForm
 
 
 def user_login(request):
+    """
+    用户登录
+    :param request:
+    :return:
+    """
     next_url = request.GET.get('next')
     context = {'next': next_url}
     if request.method == 'POST':
@@ -62,6 +69,9 @@ def user_logout(request):
 
 
 class UserListView(ListView):
+    """
+    用户列表
+    """
     model = models.UserProfile
     template_name = "accounts/user_list.html"
     context_object_name = "user_list"
@@ -69,6 +79,12 @@ class UserListView(ListView):
 
 @permission_required('accounts.change_userprofile', raise_exception=True)
 def reset_password(request, pk):
+    """
+    重置密码
+    :param request:
+    :param pk:
+    :return:
+    """
     if request.method == 'POST':
         try:
             models.UserProfile.objects.filter(id=pk).update(
@@ -82,6 +98,28 @@ def reset_password(request, pk):
 
 
 class GroupListView(ListView):
+    """
+    用户组列表
+    """
     model = Group
     template_name = "accounts/group_list.html"
     context_object_name = "group_list"
+
+
+class UserDetailView(DetailView):
+    model = models.UserProfile
+    template_name = "accounts/user_profile.html"
+    context_object_name = "user"
+    pk_url_kwarg = "pk"
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserDetailView,self).dispatch(request, *args, **kwargs)
+
+
+
+class UserUpdateView(UpdateView):
+    model = models.UserProfile
+    fields = ['mobile', 'image', 'bio']
+    template_name_suffix = 'user_profile'
+
