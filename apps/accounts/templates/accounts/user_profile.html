@@ -114,7 +114,7 @@
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#notebook" data-toggle="tab">计划任务</a></li>
-                    <li><a href="#settings" data-toggle="tab">修改密码</a></li>
+{#                    <li><a href="#settings" data-toggle="tab">修改密码</a></li>#}
                 </ul>
                 <div class="tab-content">
 
@@ -224,7 +224,7 @@
                         shadeClose: false,
                         maxmin: true,
                         area: ['800px', '480px'],
-                        content: "/users/plan_info/" + calEvent.id + '/',
+                        content: "/accounts/plan_info/" + calEvent.id + '/',
 
                     });
                 },
@@ -248,7 +248,7 @@
                 shadeClose: false,
                 maxmin: true,
                 area: ['800px', '480px'],
-                content: "#",
+                content: "{% url 'accounts:create_plan' %}",
                 end: function () {
                     window.location.reload();
                 }

@@ -116,10 +116,58 @@ class UserDetailView(DetailView):
     def dispatch(self, request, *args, **kwargs):
         return super(UserDetailView,self).dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(UserDetailView,self).get_context_data(**kwargs)
+        user = models.UserProfile.objects.get(username=self.request.user)
+        my_plans = user.self_user.filter(status=0) | user.attention_user.filter(status=0)
+        context.update({'my_plans':my_plans})
+        return context
 
 
-class UserUpdateView(UpdateView):
-    model = models.UserProfile
-    fields = ['mobile', 'image', 'bio']
-    template_name_suffix = 'user_profile'
+def create_plan(request):
+    if request.method == 'POST':
+        try:
+            user_plan = models.UserPlan.objects.create(
+                user=models.UserProfile.objects.get(id=request.POST.get('user')),
+                title=request.POST.get('title'),
+                content=request.POST.get('content'),
+                start_time=request.POST.get('start_time'),
+                end_time=request.POST.get('end_time'),
+            )
+            attention = request.POST.getlist('attention')
+            if attention:
+                user_plan.attention.set(attention)
+            return JsonResponse({'code': 200, 'result': True, 'msg': '数据保存成功！'})
+        except Exception as e:
+            return JsonResponse({'code': 500, 'result': False, 'msg': '数据保存失败！{}'.format(e)})
+    users = models.UserProfile.objects.exclude(id__in=[request.user.id])
+    return render(request, 'accounts/create_plan.html', locals())
 
+
+def plan_info(request, pk):
+    user_plan = models.UserPlan.objects.prefetch_related('attention').get(id=pk)
+    if request.method == 'GET':
+        users = models.UserProfile.objects.exclude(id__in=[request.user.id])
+        return render(request, 'accounts/plan_info.html', locals())
+    elif request.method == 'POST':
+        try:
+            user_plan.status = 1 if request.POST.get('status') else 0
+            user_plan.title = request.POST.get('title')
+            user_plan.content = request.POST.get('content')
+            user_plan.start_time = request.POST.get('start_time')
+            user_plan.end_time = request.POST.get('end_time')
+            attention = request.POST.getlist('attention')
+            if attention:
+                user_plan.attention.set(attention)
+            else:
+                user_plan.attention.clear()
+            user_plan.save()
+            return JsonResponse({'code': 200, 'result': True, 'msg': '数据保存成功！'})
+        except Exception as e:
+            return JsonResponse({'code': 500, 'result': False, 'msg': '数据保存失败！{}'.format(e)})
+    elif request.method == 'DELETE':
+        try:
+            user_plan.delete()
+            return JsonResponse({'code': 200, 'result': True, 'msg': '数据删除成功！'})
+        except Exception as e:
+            return JsonResponse({'code': 500, 'result': False, 'msg': '数据删除失败！{}'.format(e)})
