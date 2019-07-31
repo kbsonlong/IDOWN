@@ -29,9 +29,22 @@
     <br>
     <div class="row">
         <div class="col-xs-12" style="margin-bottom: 3px">
-            <button class="btn btn-sm btn-success pull-left" data-toggle="modal" data-target="#AssetModal" id="add-Asset">
+            <button class="btn btn-sm btn-success pull-left" data-toggle="modal" data-target="#AssetModal" id="add-Asset"  style="margin-left: 15px">
                 <i class="fa fa-Asset-plus"></i>
                 <span class="bigger-110">新增资产</span>
+            </button>
+            <button class="btn btn-sm btn-info pull-left" data-toggle="modal" data-target="#importAssetsModal"
+                    style="margin-left: 2px">
+                <i class="fa fa-upload"></i>
+                <span class="bigger-110">批量导入</span>
+            </button>
+            <button class="btn btn-sm btn-info pull-left" id="exportChecked" style="margin-left: 2px">
+                <i class="fa fa-file-text"></i>
+                <span class="bigger-110">批量导出</span>
+            </button>
+            <button class="btn btn-sm btn-danger pull-left" id="deleteChecked" style="margin-left: 2px">
+                <i class="fa fa-exclamation-triangle"></i>
+                <span class="bigger-110">批量删除</span>
             </button>
         </div>
 
@@ -62,6 +75,15 @@
                                                 {% for asset_type in asset_types %}
                                                     <option value="{{ asset_type.0 }}">{{ asset_type.1 }}</option>
                                                 {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="device_type" class="col-sm-2 control-label">设备类型</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control select2" id="device_type" name="device_type" style="width: 100%;"  onchange="deviceType()">
+                                                <option>请选择设备类型</option>
                                             </select>
                                         </div>
                                     </div>
@@ -148,9 +170,30 @@
 
                                 <fieldset id="server_items">
                                     <div class="form-group" >
-                                        <label for="asset_memo" class="col-sm-2 control-label">公网地址</label>
+                                        <label for="i_ip" class="col-sm-2 control-label">公网地址</label>
                                         <div class="col-sm-6">
-                                            <textarea class="form-control" name="i_ip" id="i_ip"></textarea>
+                                            <input type="text" class="form-control" name="i_ip" id="i_ip">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label for="local_ip" class="col-sm-2 control-label">内网地址</label>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control" name="local_ip" id="local_ip">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label for="hostname" class="col-sm-2 control-label">主机名称</label>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control" name="hostname" id="hostname">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="env" class="col-sm-2 control-label">所属环境</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" name="env" id="env">
+                                                <option value="">请选择环境</option>
+
+                                            </select>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -178,7 +221,7 @@
                 </div>
             </div><!-- /.modal-content -->
             </div><!-- /.modal -->
-        </div>
+
 
         <!--dataTable-->
         <div class="col-xs-12">
@@ -188,7 +231,7 @@
                     <table id="Asset" class="table table-bordered table-striped">
                         <thead>
                         <tr>
-                            <th>序号</th>
+                            <th></th>
                             <th>资产类型</th>
                             <th>子类型</th>
                             <th>公网地址</th>
@@ -205,18 +248,17 @@
                         {% for Asset in assets_list %}
                             <tr>
                                 <td>{{ Asset.id }}</td>
-
-                                {% if Asset.asset_type == 'server' %}
-                                  <td class="text-green text-bold">{{ Asset.get_asset_type_display }}</td>
+                                {% if Asset.type == 'server' %}
+                                  <td class="text-green text-bold">{{ Asset.get_type_display }}</td>
                                   <td>{{ Asset.server.get_sub_asset_type_display }}</td>
-                                {% elif Asset.asset_type == "networkdevice" %}
-                                  <td class="text-yellow text-bold">{{ Asset.get_asset_type_display }}</td>
+                                {% elif Asset.type == "networkdevice" %}
+                                  <td class="text-yellow text-bold">{{ Asset.get_type_display }}</td>
                                   <td>{{ Asset.networkdevice.get_sub_asset_type_display }}</td>
-                                {% elif Asset.asset_type == "storagedevice" %}
-                                  <td class="text-blue text-bold">{{ Asset.get_asset_type_display }}</td>
+                                {% elif Asset.type == "storagedevice" %}
+                                  <td class="text-blue text-bold">{{ Asset.get_type_display }}</td>
                                   <td>{{ Asset.storagedevice.get_sub_asset_type_display }}</td>
-                                {% elif Asset.asset_type == "securitydevice" %}
-                                  <td class="text-red text-bold">{{ Asset.get_asset_type_display }}</td>
+                                {% elif Asset.type == "securitydevice" %}
+                                  <td class="text-red text-bold">{{ Asset.get_type_display }}</td>
                                   <td>{{ Asset.securitydevice.get_sub_asset_type_display }}</td>
                                 {% endif %}
 
@@ -278,20 +320,38 @@
     <!-- DataTables -->
     <script src="{% static 'AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+
+    <!-- iCheck 1.0.1 -->
+    <script src="{% static 'js/dataTables.checkboxes.min.js' %}"></script>
+
     <!-- 输入验证 -->
     <script src="{% static 'plugins/parsley/dist/parsley.min.js' %}"></script>
     <script src="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.js' %}"></script>
 
     <script>
-
-
         $(function () {
             Asset_table = $('#Asset').DataTable({
-                columnDefs: [{
-                    'targets': [-1],
-                    'orderable': false
-                }],
-                "order": [[0, "asc"]]
+                columnDefs: [
+                    {
+                        'targets': -1,
+                        'orderable': false
+                    },
+                    {
+                        'targets': 0,
+                        'render': function (data, type, row, meta) {
+                            if (type === 'display') {
+                                data = '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>';
+                            }
+
+                            return data;
+                        },
+                        'checkboxes': {
+                            'selectRow': true,
+                        }
+                    }
+                ],
+                'select': 'multi',
+                "order": [[2, "asc"]]
             });
         });
 
@@ -302,6 +362,16 @@
                 allowClear: true
             })
         });
+
+        function checked() {
+            let checkedID = [];
+            let rows_selected = Asset_table.column(0).checkboxes.selected();
+            $.each(rows_selected, function (index, rowId) {
+                checkedID.push(rowId)
+            });
+
+            return checkedID;
+        }
 
 
         // 将数据JSON化
@@ -376,7 +446,6 @@
             let asset_type = $('#asset_type').val();
             let device_type = $('#device_type').val();
             let hosted_obj = $('.hosted_on');
-            console.log(device_type);
             asset_type === 'server'  ? hosted_obj.show() : hosted_obj.hide()
         }
 
@@ -389,7 +458,7 @@
                 $(array).each(function () {
                     if (this.name.indexOf('asset_') !== -1) {
                         assetObj[this.name.split('_')[1]] = this.value;
-                        formatObj['assets'] = assetObj;
+                        formatObj['asset'] = assetObj;
                     } else if (this.name.indexOf('device_') !== -1) {
                         formatObj[assetType + '_type'] = this.value;
                     } else {
@@ -404,10 +473,17 @@
             let assetType = $('#asset_type').val();
             let data = $('.form-horizontal').formatData(assetType);
             console.log(data);
+            if (assetType === "server") {
+                var post_url = '/api/asset/'+assetType+'/';
+                var post_data = data
+            }else {
+                var post_url = '/api/assets/';
+                var post_data = data.asset
+            }
             $.ajax({
-                url: '/api/assets/',
+                url: post_url,
                 type: 'POST',
-                data: JSON.stringify(data.assets),
+                data: JSON.stringify(post_data),
                 dataType: 'json',
                 contentType: "application/json",
                 success: function () {
@@ -448,6 +524,7 @@
         
         let assets_tbody = $('#Asset tbody');
         let assets_ops = $('#assets_ops');
+
         // 删除资产
         assets_tbody.on('click', '.delete', function () {
             {% if perms.auth.delete_assets %}
@@ -488,13 +565,111 @@
             {% endif %}
         });
 
+        // 批量导出
+        $('#exportChecked').click(function () {
+            {% if perms.assets.add_assets %}
+                let checkedID = checked();
+                if (checkedID.length === 0) {
+                    $.alert({
+                        title: 'Tips',
+                        type: 'red',
+                        content: '请选择要导出的资产！',
+                    })
+                } else {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', '{% url 'assets:export_assets' %}');
+                    xhr.responseType = 'blob';
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                    xhr.onload = function () {
+                        if (this.status === 200) {
+                            let blob = this.response;
+                            let reader = new FileReader();
+                            reader.readAsDataURL(blob);
+                            reader.onload = function (e) {
+                                let a = document.createElement('a');
+                                a.download = '资产列表.csv';
+                                a.href = e.target.result;
+                                a.click();
+                                $(a).remove();
+                            }
+                        }
+                    };
+                    xhr.send('pks=' + JSON.stringify(checkedID))
+                }
+            {% else %}
+                $.alert({
+                    title: 'Tips',
+                    type: 'red',
+                    content: '抱歉！您没有导出资产的权限！如有疑问，请联系管理员！',
+                });
+            {% endif %}
+        });
+
+
+        // 批量删除
+        $("#deleteChecked").click(function () {
+            {% if perms.assets.delete_assets %}
+                let checkedID = checked();
+                if (checkedID.length === 0) {
+                    $.alert({
+                        title: 'Tips',
+                        type: 'red',
+                        content: '请选择要删除的资产！',
+                    })
+                } else {
+                    $.confirm({
+                        title: 'Tips',
+                        content: '确定要删除这些资产么？',
+                        type: 'red',
+                        buttons: {
+                            Ok: function () {
+                                for (let i = 0; i < checkedID.length; i++) {
+                                    $.ajax({
+                                        url: '/api/assets/' + checkedID[i] + '/',
+                                        method: 'DELETE',
+                                        error: function (data) {
+                                            $.alert({
+                                                title: 'Tips',
+                                                type: 'red',
+                                                content: '删除失败！' + data.responseText,
+                                            })
+                                        }
+                                    })
+                                }
+                                $.confirm({
+                                    title: 'Tips',
+                                    content: '删除完成！',
+                                    type: 'green',
+                                    buttons: {
+                                        Ok: function () {
+                                            window.location.reload()
+                                        },
+                                    }
+                                })
+                            },
+                            Cancel: function () {
+                                // close
+                            }
+                        }
+                    })
+                }
+            {% else %}
+                $.alert({
+                    title: 'Tips',
+                    type: 'red',
+                    content: '抱歉！您没有删除资产的权限！如有疑问，请联系管理员！',
+                });
+            {% endif %}
+        });
+
         //获取列表
         function get_list (info){
             $.ajax({
                 url: '/api/asset/' + info  + '/',
                 type: 'GET',
                 success: function (res) {
-                    let cabinet_obj = $('#'+info);
+                    let cabinet_obj = $('#asset_'+info);
                     let cabinets = res;
                     cabinet_obj.html('');
                     for (let i = 0; i < cabinets.length; i++) {
@@ -507,11 +682,10 @@
         }
 
         $(document).ready(function(){
-            {#get_list('cabinet');#}
             get_list('idc');
-            {#get_list('provider');#}
             get_list('businessunit');
             $('#server_items').hide();
+            $('#device_type').hide();
         });
 
         $(document).ready(function () {
@@ -519,12 +693,30 @@
                 url: '/api/account/users/',
                 type: 'GET',
                 success: function (res) {
-                    let cabinet_obj = $('#users');
+                    let cabinet_obj = $('#asset_admin');
                     let cabinets = res;
                     cabinet_obj.html('');
                     for (let i = 0; i < cabinets.length; i++) {
                         cabinet_obj.append(
                             '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['username'] + '</option>'
+                        )
+                    }
+                }
+            })
+        });
+
+
+        $(document).ready(function () {
+            $.ajax({
+                url: '/api/asset/env/',
+                type: 'GET',
+                success: function (res) {
+                    let cabinet_obj = $('#env');
+                    let cabinets = res;
+                    cabinet_obj.html('');
+                    for (let i = 0; i < cabinets.length; i++) {
+                        cabinet_obj.append(
+                            '<option value=' + cabinets[i]['id'] + '>' + cabinets[i]['name_cn'] + '</option>'
                         )
                     }
                 }

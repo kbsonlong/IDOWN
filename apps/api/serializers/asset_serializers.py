@@ -18,13 +18,26 @@ class AssetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class ServerSerializer(serializers.ModelSerializer):
     """
     服务器管理
     """
+    asset = AssetSerializer(many=False, required=False)
     class Meta:
         model = models.Server
         fields = '__all__'
+
+
+    def create(self, validated_data):
+        if validated_data.get('asset'):
+            assets_data = validated_data.pop('asset')
+            assets = models.Asset.objects.create(**assets_data)
+        else:
+            assets = models.Asset()
+        validated_data['asset'] = assets
+        server = models.Server.objects.create(**validated_data)
+        return server
 
 class EnvSerializer(serializers.ModelSerializer):
     """

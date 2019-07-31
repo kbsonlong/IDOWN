@@ -25,7 +25,7 @@ class Asset(models.Model):
         (5, '待初始化'),
     )
 
-    asset_type = models.CharField(choices=asset_type_choice, max_length=64, default='server', verbose_name='资产类型')
+    type = models.CharField(choices=asset_type_choice, max_length=64, default='server', verbose_name='资产类型')
     name = models.CharField(max_length=64, unique=True, verbose_name='资产名称')  # 不可重复
     sn = models.CharField(max_length=128, unique=True, verbose_name='资产序列号')
     business_unit = models.ForeignKey('BusinessUnit', null=True, blank=True, verbose_name='所属业务线',
@@ -52,7 +52,7 @@ class Asset(models.Model):
     m_time = models.DateTimeField(auto_now=True, verbose_name='更新日期')
 
     def __str__(self):
-        return '<%s>  %s' % (self.get_asset_type_display(), self.name)
+        return '<%s>  %s' % (self.get_type_display(), self.name)
 
     class Meta:
         verbose_name = '资产总表'
