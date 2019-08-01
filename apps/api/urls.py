@@ -39,6 +39,6 @@ urlpatterns = [
     path(r'', include(router.urls)),
     path(r'api/', include('rest_framework.urls', namespace='rest_framework')),
     # 接口文档路由
-    path(r'docs/', include_docs_urls(title='My API title')),
+    # path(r'docs/', include_docs_urls(title='My API title')),
     # path(r'docs/', include_docs_urls(title=API_TITLE, description=API_DESCRIPTION, authentication_classes=[], permission_classes=[])),
 ]
