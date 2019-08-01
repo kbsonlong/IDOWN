@@ -10,6 +10,7 @@ pipeline {
         __git_url = "https://github.com/kbsonlong/IDOWN.git"
         __ssh_config_name = "seam.alongparty.cn"
         __artifact1 = "IDOWN"
+        DEPLOY_ENV = "dev"
     }
     parameters {
         choice(name:'DEPLOY_ENV', choices:'dev\ndev2\nstaging', description:'请选择部署的环境')
