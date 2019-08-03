@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 import sys
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(BASE_DIR,'apps'))
@@ -42,6 +43,17 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'rest_framework',
     'assets.apps.AssetsConfig',
+'django.contrib.sites.apps.SitesConfig',
+'django.contrib.humanize.apps.HumanizeConfig',
+'django_nyt.apps.DjangoNytConfig',
+'mptt',
+'sekizai',
+'sorl.thumbnail',
+'wiki.apps.WikiConfig',
+'wiki.plugins.attachments.apps.AttachmentsConfig',
+'wiki.plugins.notifications.apps.NotificationsConfig',
+'wiki.plugins.images.apps.ImagesConfig',
+'wiki.plugins.macros.apps.MacrosConfig',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "sekizai.context_processors.sekizai",
             ],
         },
     },
@@ -143,4 +156,7 @@ AUTH_USER_MODEL ="accounts.UserProfile"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
+SITE_ID = 1
+WIKI_ACCOUNT_HANDLING = True
+WIKI_ACCOUNT_SIGNUP_ALLOWED = True
 

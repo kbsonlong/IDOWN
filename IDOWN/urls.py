@@ -26,5 +26,7 @@ urlpatterns = [
     path('',views.dashboard,name='dashboard'),
     path('accounts/',include('accounts.urls',namespace="accounts")),
     path('assets/',include('assets.urls',namespace="assets")),
+    path('notifications/', include('django_nyt.urls')),
+    path('wiki/', include('wiki.urls'))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
