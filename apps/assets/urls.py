@@ -20,5 +20,6 @@ app_name = 'assets'
 
 urlpatterns = [
     path('assets/',views.AssetListView.as_view(),name='assets_list'),
+    path('asset_detail/<int:pk>',views.AssetDetailView.as_view(),name='asset_detail'),
     re_path(r'export_assets/', views.export_assets, name='export_assets'),
 ]

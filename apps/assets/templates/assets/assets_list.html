@@ -262,7 +262,7 @@
                                   <td>{{ Asset.securitydevice.get_sub_asset_type_display }}</td>
                                 {% endif %}
 
-                                <td>{{ Asset.server.i_ip }}</td>
+                                <td><a href="{% url "assets:asset_detail" Asset.pk %}">{{ Asset.server.i_ip }}</a></td>
                                 <td>{{ Asset.name }}</td>
                                 <td>{{ Asset.server.app_set.count }}</td>
                                 <td>
@@ -290,9 +290,10 @@
 
                                 <td>{{ Asset.m_time }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-success btn-xs modify" data-toggle="modal"
-                                            data-id="{{ Asset.id }}" data-target="#AssetModal">详细/更新
-                                    </button>
+                                    <a href="{% url "assets:asset_detail" Asset.pk %}">
+                                        <button type="button" class="btn btn-success btn-xs modify" data-toggle="modal"
+                                            data-id="{{ Asset.id }}" data-target="#AssetModal">详细</button>
+                                    </a>
                                     <button type="button" class="btn btn-danger btn-xs delete" data-id="{{ Asset.id }}">
                                         删除
                                     </button>

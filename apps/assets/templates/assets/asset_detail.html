@@ -1,0 +1,191 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}资产详细{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        资产详细
+        <small>asset info</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 主页</a></li>
+        <li>资产总表</li>
+        <li class="active">资产详细</li>
+      </ol>
+    </section>
+{% endblock %}
+
+{% block content %}
+
+     <!-- Main content -->
+    <section class="content">
+
+      <!-- Default box -->
+      <div class="box">
+
+        <div class="box-header with-border">
+            <h3 class="box-title"><strong class="btn btn-block btn-primary btn-lg">资产：{{ asset.server.hostname }}</strong></h3>
+
+            <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+              <i class="fa fa-times"></i></button>
+            </div>
+        </div>
+
+        <div class="box-body">
+
+            <h4><b>概览:</b></h4>
+            <table border="1" class="table  table-responsive" style="border-left:3px solid deepskyblue;border-bottom:1px solid deepskyblue" >
+                <thead>
+                    <tr>
+                        <th>类型</th>
+                        <th>SN</th>
+                        <th>业务线</th>
+                        <th>公网地址</th>
+                        <th>私网地址</th>
+                        <th>机房</th>
+                        <th>标签</th>
+                        <th>更新日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{ asset.get_type_display }}</td>
+                    <td>{{ asset.sn }}</td>
+                    <td>{{ asset.business_unit|default:'N/A' }}</td>
+                    <td>{{ asset.server.i_ip|default:'N/A' }}</td>
+                    <td>{{ asset.server.local_ip|default:'N/A' }}</td>
+                    <td>{{ asset.idc|default:'N/A' }}</td>
+                    <td>
+                        {% for tag in asset.tags.all %}
+                        <label class="label label-primary">{{ tag.name }}</label>
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+                    <td>{{ asset.m_time }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <br />
+            <table border="1" class="table  table-responsive" style="border-left:3px solid deepskyblue;border-bottom:1px solid deepskyblue">
+                <thead>
+                    <tr>
+                        <th>价格</th>
+                        <th>购买日期</th>
+                        <th>过保日期</th>
+                        <th>管理员</th>
+                        <th>批准人</th>
+                        <th>备注</th>
+                        <th>批准日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{ asset.price|default:'N/A' }}</td>
+                    <td>{{ asset.purchase_day|default:'N/A' }}</td>
+                    <td>{{ asset.expire_day|default:'N/A' }}</td>
+                    <td>{{ asset.admin|default:'N/A' }}</td>
+                    <td>{{ asset.approved_by|default:'N/A' }}</td>
+                    <td>{{ asset.memo|default:'N/A' }}</td>
+                    <td>{{ asset.m_time }}</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h4><b>服务器:</b></h4>
+            <table border="1" class="table  table-responsive" style="border-left:3px solid green;border-bottom:1px solid green">
+                <thead>
+                    <tr>
+                        <th>服务器类型</th>
+                        <th>主机名称</th>
+                        <th>阿里云实例ID</th>
+                        <th>宿主机</th>
+                        <th>所属环境</th>
+                        <th>内存(MB)</th>
+                        <th>CPU核数</th>
+                        <th>OS版本</th>
+                        <th>添加方式</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{ asset.server.get_sub_asset_type_display }}</td>
+                    <td>{{ asset.server.hostname|default:'N/A' }}</td>
+                    <td>{{ asset.server.instance_id|default:'N/A' }}</td>
+                    <td>{{ asset.server.hosted_on.id|default:'N/A' }}</td>
+                    <td>{{ asset.server.env.name }}</td>
+                    <td>{{ asset.server.ram|default:'N/A' }}</td>
+                    <td>{{ asset.server.cpu|default:'N/A' }}</td>
+                    <td>{{ asset.server.os_release|default:'N/A' }}</td>
+                    <td>{{ asset.server.get_created_by_display }}</td>
+                </tr>
+                </tbody>
+            </table>
+{##}
+            <h4><b>应用:</b></h4>
+            <table border="1" class="table  table-responsive" style="border-left:3px solid brown;border-bottom:1px solid brown">
+                <thead>
+                    <tr>
+                        <th style="width:5%;">序号</th>
+                        <th>应用名称</th>
+                        <th>应用中文名称</th>
+                        <th>应用类型</th>
+                        <th>应用状态</th>
+                        <th>应用负责人</th>
+                        <th>应用上线时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for app in asset.server.app_set.all %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url 'assets:app_detail' app.id %}">{{ app.name|default:'N/A' }}</a></td>
+                        <td>{{ app.name_cn|default:'N/A' }}</td>
+                        <td>{{ app.get_app_type_display }}</td>
+                        {% if app.active == 1 %}
+                          <td><label class="label label-success">{{ app.get_active_display}}</label></td>
+                        {% elif app.active == 4 %}
+                          <td><label class="label label-warning">{{ app.get_active_display}}</label></td>
+                        {% elif app.active == 9 %}
+                          <td><label class="label label-info">{{ app.get_active_display}}</label></td>
+                        {% endif %}
+                        <td>{{ app.leader }}</td>
+                        <td>{{ app.create_time }}</td>
+                    </tr>
+                {% empty %}
+                    暂无部署应用
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+        </div>
+        <!-- /.box-body -->
+
+
+
+        <div class="box-footer">
+          <i class="fa fa-angle-double-left"></i>&nbsp;&nbsp;<a href="{% url 'assets:assets_list' %}"><strong>返回资产列表页</strong></a>
+        </div>
+        <!-- /.box-footer-->
+      </div>
+      <!-- /.box -->
+
+    </section>
+    <!-- /.content -->
+
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
