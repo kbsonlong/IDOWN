@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import permission_required
 from django.http import FileResponse
 # Create your views here.
 from . import models
-from .utils import ExportExcel
+from .utils.tools import ExportExcel
 
 
 class AssetListView(ListView):

@@ -295,9 +295,6 @@ class Software(models.Model):
         unique_together = ('name', 'version',)
 
 
-
-
-
 class Disk(models.Model):
     """硬盘设备"""
 

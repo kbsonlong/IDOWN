@@ -68,6 +68,7 @@ def user_logout(request):
 
 
 
+@method_decorator(login_required,name="dispatch")
 class UserListView(ListView):
     """
     用户列表
@@ -96,7 +97,7 @@ def reset_password(request, pk):
             return JsonResponse({"code": 500, "data": None, "msg": "密码重置失败，原因：{}".format(e)})
 
 
-
+@method_decorator(login_required,name="dispatch")
 class GroupListView(ListView):
     """
     用户组列表
@@ -106,20 +107,19 @@ class GroupListView(ListView):
     context_object_name = "group_list"
 
 
+@method_decorator(login_required,name="dispatch")
 class UserDetailView(DetailView):
     model = models.UserProfile
     template_name = "accounts/user_profile.html"
     context_object_name = "user"
     pk_url_kwarg = "pk"
 
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        return super(UserDetailView,self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(UserDetailView,self).get_context_data(**kwargs)
         user = models.UserProfile.objects.get(username=self.request.user)
-        my_plans = user.self_user.filter(status=0) | user.attention_user.filter(status=0)
+        # my_plans = user.self_user.filter(status=0) | user.attention_user.filter(status=0)
+        my_plans = user.self_user.all() | user.attention_user.all()
         context.update({'my_plans':my_plans})
         return context
 

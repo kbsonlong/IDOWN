@@ -193,7 +193,7 @@
                 let user_name = $('#user_set option:selected').text();
                 let data = $('#group_detail').serializeJson();
                 $.ajax({
-                    url: '/api/group/',
+                    url: '/api/account/group/',
                     type: 'POST',
                     data: JSON.stringify(data),
                     dataType: 'json',
@@ -223,7 +223,7 @@
                 $('.modal-title').text('修改用户组');
                 group_ops.text('确认修改');
 
-                $.get('/api/group/' + group_id + '/', function (data) {
+                $.get('/api/account/group/' + group_id + '/', function (data) {
                     $('#name').val(data.name);
                     $('#user_set').val(data.user_set).trigger('change');
                     $('#permissions').val(data.permissions).trigger('change');
@@ -232,7 +232,7 @@
                 group_ops.unbind('click').on('click', function () {
                     let data = $('#group_detail').serializeJson();
                     $.ajax({
-                        url: '/api/group/' + group_id + '/',
+                        url: '/api/account/group/' + group_id + '/',
                         type: 'PUT',
                         data: JSON.stringify(data),
                         dataType: 'json',
@@ -273,7 +273,7 @@
                     buttons: {
                         Ok: function () {
                             $.ajax({
-                                url: '/api/group/' + pk + '/',
+                                url: '/api/account/group/' + pk + '/',
                                 method: 'DELETE',
                                 success: function () {
                                     group_table.row(tr_obj).remove().draw();
