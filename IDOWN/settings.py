@@ -40,20 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts.apps.AccountsConfig',
+    'channels',
     'rest_framework',
+    'accounts.apps.AccountsConfig',
     'assets.apps.AssetsConfig',
-'django.contrib.sites.apps.SitesConfig',
-'django.contrib.humanize.apps.HumanizeConfig',
-'django_nyt.apps.DjangoNytConfig',
-'mptt',
-'sekizai',
-'sorl.thumbnail',
-'wiki.apps.WikiConfig',
-'wiki.plugins.attachments.apps.AttachmentsConfig',
-'wiki.plugins.notifications.apps.NotificationsConfig',
-'wiki.plugins.images.apps.ImagesConfig',
-'wiki.plugins.macros.apps.MacrosConfig',
+    'webssh.apps.WebsshConfig',
 ]
 
 MIDDLEWARE = [
@@ -81,7 +72,6 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                "sekizai.context_processors.sekizai",
             ],
         },
     },
@@ -156,13 +146,12 @@ AUTH_USER_MODEL ="accounts.UserProfile"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-SITE_ID = 1
-WIKI_ACCOUNT_HANDLING = True
-WIKI_ACCOUNT_SIGNUP_ALLOWED = True
-
-
 # salt配置
 SALT_MASTER = '192.168.99.101'
 SALT_USER = 'salt'
 SALT_PASSWD = 'salt'
 SALT_API_PORT = 8000
+REDIS_HOST ='seam.alongparty.cn'
+REDIS_PORT = 8379
+REDIS_DB = 10
+ASGI_APPLICATION = 'IDOWN.routing.application'

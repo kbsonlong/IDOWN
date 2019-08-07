@@ -1,0 +1,6 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+    <p>找不到此页面<small style="color: red;">{{ request.get_full_path }}</small>，3s后返回<a href="/">首页</a></p>
+    <span style="font-size:18px;"> </span><span style="font-size:24px;"><meta http-equiv="refresh" content="3;URL=/"> </span>
+{% endblock %}

@@ -26,7 +26,15 @@ urlpatterns = [
     path('',views.dashboard,name='dashboard'),
     path('accounts/',include('accounts.urls',namespace="accounts")),
     path('assets/',include('assets.urls',namespace="assets")),
-    path('notifications/', include('django_nyt.urls')),
-    path('wiki/', include('wiki.urls'))
+    path('webssh/',include('webssh.urls',namespace='webssh')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# 全局403
+handler403 = 'IDOWN.views.page_forbidden'
+
+# 全局404
+handler404 = 'IDOWN.views.page_not_found'
+
+# 全局500
+handler500 = 'IDOWN.views.page_error'

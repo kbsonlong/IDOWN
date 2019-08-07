@@ -1,0 +1,16 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ record.admin_server }}</title>
+    <link rel="stylesheet" href="{% static 'plugins/asciinema-player/asciinema-player.css' %}">
+</head>
+<body>
+<div>
+    <asciinema-player cols="150" rows="30" src="{{ MEDIA_URL }}{{ record.record_file }}"></asciinema-player>
+</div>
+<script src="{% static 'plugins/asciinema-player/asciinema-player.js' %}"></script>
+
+</body>
+</html>

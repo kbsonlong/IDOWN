@@ -1,0 +1,180 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ ssh_server_ip }}</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'adminlet-2.4.10/bower_components/bootstrap/dist/css/bootstrap.min.css' %}">
+    <link href="{% static 'plugins/bootstrap-fileinput/css/fileinput.min.css' %}" media="all" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'xterm/xterm.css' %}" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.css' %}">
+
+    <style>
+        @media screen and (max-width: 750px) {
+            .main-header {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <header class="main-header">
+        <nav class="navbar navbar-light" style="background-color: #e3f2fd; margin-bottom: 0">
+            <a class="navbar-brand">当前登录服务器为： {{ ssh_server_ip }} </a>
+            <form class="form-inline" enctype="multipart/form-data">
+                <div class="input-group" style="margin-top: 10px;margin-left: 200px;">
+                    <input type="file" id="upload_file" class="file" name="upload_file" multiple required>
+                </div>
+
+                <input class="form-control mr-sm-2" type="search" id="download_file" name="download_file"
+                       placeholder="请输入要下载文件的全路径" aria-label="Search"
+                       style="width: 20%;margin-top: 10px;margin-left: 20px;">
+                <button class="btn btn-outline-success my-2 my-sm-0 download_file" type="button"
+                        style="margin-top: 10px;">下载
+                </button>
+            </form>
+        </nav>
+    </header>
+
+    <div class="content-wrapper">
+        <section class="content container-fluid">
+            <div class="row">
+                <!--dataTable-->
+                <div class="col-xs-12">
+                    <!-- /.box -->`
+                    <div class="box" style="margin-top: -15px;">
+                        <div class="box-body">
+                            <div id="terms"></div>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</body>
+
+<script src="{% static 'adminlet-2.4.10/bower_components/jquery/dist/jquery.min.js' %}"></script>
+<script src="{% static 'adminlet-2.4.10/bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-fileinput/js/fileinput.min.js' %}"></script>
+<script src="{% static 'xterm/xterm.js' %}"></script>
+<script src="{% static 'xterm/fit.js' %}"></script>
+<script src="{% static 'plugins/jquery-confirm/dist/jquery-confirm.min.js' %}"></script>
+<script>
+    function get_term_size() {
+        var init_width = 9;
+        var init_height = 21;
+
+        var windows_width = $(window).width();
+        var windows_height = $(window).height();
+
+        return {
+            cols: Math.floor(windows_width / init_width),
+            rows: Math.floor(windows_height / init_height),
+        }
+    }
+    var cols = get_term_size().cols;
+    var rows = get_term_size().rows;
+    let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+    {#let socket = new WebSocket(ws_scheme + '://' + window.location.host + '/webssh/ws/{{ pk }}/{{ group_name }}/?' + 'user={{ username|default:root }}&ssh_server_ip={{ ssh_server_ip|default:seam.alongparty.cn }}' + '&width=' + cols + '&height=' + rows);#}
+    let socket = new WebSocket(ws_scheme + '://' + window.location.host + '/webssh/ws/{{ pk }}/{{ group_name }}/?' + 'user={{ request.user.username }}&ssh_server_ip={{ ssh_server_ip }}&remote_ip={{ remote_ip }}' + '&width=' + cols + '&height=' + rows);
+    socket.onopen = function () {
+        {#$("#terms").css("height", document.documentElement.clientHeight - 20);#}
+        console.log(document.documentElement.clientHeight);
+        const term = new Terminal({
+            cols: cols,
+            rows: rows,
+            screenKeys: true,
+            useStyle: true,
+            cursorBlink: true,
+        });
+        term.open(document.getElementById('terms'));
+
+        term.on('data', function (data) {
+            socket.send(data);
+        });
+        socket.onmessage = function (msg) {
+            term.write(msg.data);
+        };
+        socket.onerror = function (e) {
+            alert(e);
+        };
+        socket.onclose = function () {
+            // pass
+        };
+    };
+    socket.onerror = function () {
+        document.getElementById('terms').innerHTML = '<h3>连接失败！请查看日志！</h3>';
+    };
+    $("#upload_file").fileinput({
+        language: 'zh',
+        showUpload: true,
+        dropZoneEnabled: false,
+        msgPlaceholder: '文件大小不能超过100M...',
+        showPreview: false,
+        showCaption: true,
+        maxFileSize: 102400,
+        maxFileCount: 10,
+        uploadUrl: '/webssh/ssh/{{ pk }}/',
+        mergeAjaxCallbacks: true,
+        ajaxSettings:
+            {
+                headers: {
+                    'X-CSRFToken':
+                        '{{ csrf_token }}'
+                }
+                ,
+                success: function (response) {
+                    if (response.code === 200) {
+                        $.alert({
+                            title: 'Tips',
+                            type: 'green',
+                            content: response.msg,
+                        })
+                    } else {
+                        $.alert({
+                            title: 'Tips',
+                            type: 'red',
+                            content: response.msg,
+                        })
+                    }
+                }
+                ,
+                error: function (response) {
+                    $.alert({
+                        title: 'Tips',
+                        type: 'red',
+                        content: response.msg,
+                    })
+                }
+                ,
+            }
+        ,
+        browseLabel: '浏览文件',
+        removeLabel:
+            '清空',
+        uploadLabel:
+            '上传'
+    })
+    ;
+    $('.download_file').on('click', function () {
+        let download_file = $('#download_file').val();
+        if (download_file.length !== 0) {
+            location.href = '/webssh/ssh/' + {{ pk }} +'/?download_file=' + download_file
+        } else {
+            $.alert({
+                title: 'Tips',
+                type: 'red',
+                content: "文件名不能为空！",
+            })
+        }
+    });
+</script>
+
+</html>
